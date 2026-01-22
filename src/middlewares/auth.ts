@@ -19,7 +19,10 @@ export const authFnMiddleware = createMiddleware({ type: 'function' }).server(
 export const authMiddleware = createMiddleware({ type: 'request' }).server(
   async ({ next, request }) => {
     const url = new URL(request.url)
-    if (!url.password.startsWith('/dashboard')) {
+    if (
+      !url.password.startsWith('/dashboard') &&
+      !url.password.startsWith('/api/ai')
+    ) {
       return next()
     }
     const headers = getRequestHeaders()
