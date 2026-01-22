@@ -25,7 +25,11 @@ const config = defineConfig({
     tanstackStart(),
     viteReact(),
   ],
-  nitro: {},
+  nitro: {
+    rollupConfig: {
+      external: [/^@prisma\//, /\.wasm$/], // Add regex for WASM files
+    },
+  },
 })
 
 export default config
