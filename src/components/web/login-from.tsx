@@ -14,11 +14,16 @@ import {
   FieldLabel,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { loginSchema } from '@/schemas/auth'
+import { toast } from 'sonner'
+import { authClient } from '@/lib/auth-client'
+import { useTransition } from 'react'
 
 export function LoginForm() {
+  const navigate = useNavigate()
+  const [isPending, startTransition] = useTransition()
   const form = useForm({
     defaultValues: {
       email: '',
@@ -27,8 +32,25 @@ export function LoginForm() {
     validators: {
       onSubmit: loginSchema,
     },
-    onSubmit: async ({ value }) => {
-      console.log('values:', value)
+    onSubmit: ({ value }) => {
+      startTransition(async () => {
+        await authClient.signIn.email({
+          email: value.email,
+          password: value.password,
+          // callbackURL: '/dashboard',
+          fetchOptions: {
+            onSuccess: () => {
+              toast.success('Welcome back! You have logged in successfully.')
+              navigate({ to: '/dashboard' })
+            },
+            onError: ({ error }) => {
+              toast.error(
+                error?.message || 'Something went wrong. Please try again.',
+              )
+            },
+          },
+        })
+      })
     },
   })
   return (
@@ -100,7 +122,9 @@ export function LoginForm() {
               }}
             />
             <Field>
-              <Button type="submit">Login</Button>
+              <Button disabled={isPending} type="submit">
+                {isPending ? 'Logging in...' : 'Login'}
+              </Button>
               <FieldDescription className="text-center">
                 Don&apos;t have an account? <Link to="/signup">Sign up</Link>
               </FieldDescription>

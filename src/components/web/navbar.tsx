@@ -1,8 +1,27 @@
 import { Link } from '@tanstack/react-router'
-import { buttonVariants } from '../ui/button'
+import { Button, buttonVariants } from '../ui/button'
 import { ThemeToggle } from './theme-toggle'
+import { authClient } from '@/lib/auth-client'
+import { toast } from 'sonner'
 
 export default function Navbar() {
+  const { data: session, isPending } = authClient.useSession()
+
+  const handleSignout = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success('You have logged out successfully.')
+        },
+        onError: ({ error }) => {
+          toast.error(
+            error?.message || 'Something went wrong. Please try again.',
+          )
+        },
+      },
+    })
+  }
+
   return (
     <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
@@ -16,15 +35,28 @@ export default function Navbar() {
         </div>
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <Link
-            className={buttonVariants({ variant: 'secondary' })}
-            to="/login"
-          >
-            Login
-          </Link>
-          <Link className={buttonVariants()} to="/signup">
-            Get Started
-          </Link>
+          {isPending ? null : session ? (
+            <>
+              <Button variant={'secondary'} onClick={handleSignout}>
+                Logout
+              </Button>
+              <Link to="/dashboard" className={buttonVariants()}>
+                Dashboard
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                className={buttonVariants({ variant: 'secondary' })}
+                to="/login"
+              >
+                Login
+              </Link>
+              <Link className={buttonVariants()} to="/signup">
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>
