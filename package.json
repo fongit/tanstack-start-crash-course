@@ -6,7 +6,6 @@
     "dev": "vite dev --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "postinstall": "prisma generate && prisma db push",
     "test": "vitest run",
     "lint": "eslint",
     "format": "prettier",
